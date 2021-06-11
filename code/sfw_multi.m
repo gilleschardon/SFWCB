@@ -1,6 +1,19 @@
 function [Xs, RE, IM, nu, err] = sfw_multi(Xm, k, Data, Xgrid, lambda, tolpos, tolamp, Niter, LX, UX, Xs, RE, IM)
 
+%% SFW for source localization
 
+
+% Xm microphone positions Mx3
+% k wavenumber
+% Data acoustical data, MxS (S snapshots)
+% X grid initialization grid Nx3
+% lambda lambda
+% tolpos tolamp tolerance for source removal
+% Niter max number of iterations
+% LX UX bounds of the domain
+% Xs RE IM, for continuations, solutions for previous lambda, optional
+
+% Greedy mode : lambda = 0, Niter = number of sources
 tol = 1e-10;
 options_nu = optimoptions(@fmincon,'Display', 'off', 'Algorithm','sqp', 'SpecifyObjectiveGradient',false, 'CheckGradient', false, 'OptimalityTolerance', tol);
 options_amps = optimoptions(@fmincon,'Display', 'off', 'Algorithm', 'sqp', 'SpecifyObjectiveGradient',true, 'CheckGradient', false,  'OptimalityTolerance', tol, 'MaxFunctionEvaluations', 1e7, 'StepTolerance', tol);

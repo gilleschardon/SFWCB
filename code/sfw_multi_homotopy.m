@@ -1,5 +1,23 @@
 function [X, RE, IM, lambda, err] = sfw_multi_homotopy(Xsensors, k, Data, Xgrid, lambda0, c,errstop, Itermax, LX, UX)
 
+%% SFW homotopy
+
+% Xsensors microphones positions Mx3
+% k  wavenumber
+% Data acoustical data, MxS (S snapshots)
+% Xgrid initialization grid Nx3
+% lambda0 first lambda (high)
+% c constant for new lambda (<1)
+% iterlambdamax number of lambda
+% Itermax max iter of each SFW
+% LX UX domain
+
+
+% X estimated positions
+% RE IM amplitudes
+% lambda
+% err residiual
+
 
 X = cell(1,1);
 RE = cell(1, 1);

@@ -1,4 +1,4 @@
-%% Influcence of the noise on precision
+%% MSE, number of snapshots
 
 clear all
 
@@ -85,7 +85,7 @@ for p = 1:nbPlots
            
         % SFW
         tic
-        [XSFW, RE, IM] = sfw_multi_greedy_complex(Pmic, k, Y, XX, 0, 0, nbSources, [LBx LBy LBz]-0.1, [UBx UBy UBz]+0.1);
+        [XSFW, RE, IM] = sfw_multi_norm(Pmic, k, Y, XX, 0, 0, 0, nbSources, [LBx LBy LBz]-0.1, [UBx UBy UBz]+0.1);
         TS(p) = TS(p) + toc;
         [epS, eaS ] = compute_errors(XSFW, XS, sqrt(RE.^2+IM.^2), a);
 

@@ -1,8 +1,7 @@
 function [BF] = BF(Y,XX, Pmic, k)
 
 
-%OMP this fonciton compute the inidce of the sources using the OMP method
-%   Detailed explanation goes here
+% beamforming
 
 %% Initialisation
 r=Y;

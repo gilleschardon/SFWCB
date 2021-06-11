@@ -1,5 +1,7 @@
 function [epos, eamps] = compute_errors(Xest, Xtrue, Aest, Atrue)
 
+% compute position and amplitude errors by matching sources
+
 dists = (Xest(:,1) - Xtrue(:,1)').^2 + (Xest(:,2) - Xtrue(:,2)').^2 + (Xest(:,3) - Xtrue(:,3)').^2;
 
 M = matchpairs(dists, 1e10);

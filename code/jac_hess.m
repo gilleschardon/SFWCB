@@ -1,12 +1,7 @@
 function [jacobian,hessian] = jac_hess(q,Pr,A_r,A_jac,A_hess)
-%q(i) = 1xsnapshots
-%P_r = nxsnapshots
-%A_r = nx1
-%A_jac = nx3 dx dy dz
-%A_hess = nx6 dxx dyy dzz dyz dxz dxy
 
-%jacobian = 3x1
-%hessian = 3x3
+% jacobian and hessian, for local Newton steps of NOMP
+
 
 new_Pr=Pr - A_r * q;
 norm_qi=abs(q.^2);%(q(i)')*q(i);

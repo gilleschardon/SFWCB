@@ -1,8 +1,16 @@
-function [S, q_omp, BF] = OMP(Y,nbSources,XX, Pmic, k)
+function [S, q_omp] = OMP(Y,nbSources,XX, Pmic, k)
 
 
-%OMP this fonciton compute the inidce of the sources using the OMP method
-%   Detailed explanation goes here
+%% classic OMP
+% Y data
+% nbSources iterations
+% XX grid
+% Pmic microphone positions
+% k wavenumber
+
+% S positions
+% q_omp amplitudes
+
 
 %% Initialisation
 r=Y;
@@ -16,9 +24,7 @@ Domn = Dom ./ sqrt(sum(abs(Dom.^2), 1));
 for i = 1:nbSources
 %% Computation of the correlations of the residual with each of the atoms of the dictionary,and identification of the maximum
     rho = sum(abs(Domn'* r).^2, 2);
-    if i == 1
-        BF = rho;
-    end
+
     
 %rho=sum(((Dom./sum(Dom.*conj(Dom),2))'*r).*(((Dom'*r)').'),2);
     [~,l_star]=max(rho);

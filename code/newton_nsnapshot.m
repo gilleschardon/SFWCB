@@ -1,5 +1,17 @@
 function [S,q] = newton_nsnapshot(Y, nbSources,XX,Pmic,  tol, k)
 
+%% newtonized OMP
+% Y data
+% nbSources iterations
+% XX grid
+% Pmic microphone positions
+% tol tolerance for local optimizations
+% k wavenumber
+
+% S positions
+% q amplitudes
+
+
 if nargin < 5
     tol = 1e-6;
 end

@@ -96,7 +96,7 @@ Al2 = Dl\data(:, 1:10);
 
 
 %%
-ratio = 500;
+ratio = 1000;
 figure
 
 subplot(3, 1, 1)
@@ -109,15 +109,15 @@ xlabel('X (m)')
 ylabel('Y (m)')
 
 subplot(3, 1, 2)
-scatter(XSFWm(:, 1), XSFWm(:, 2), mean(abs(ASFW.^2), 2)/ratio, 's', 'linewidth', 2)
+scatter(XSFWm(:, 1), XSFWm(:, 2), mean(abs(ASFW.^2), 2)/ratio, 's', 'linewidth', 1)
 hold on
-scatter(S_N1(:, 1), S_N1(:, 2), mean(abs(q_N1.^2), 2)/ratio, 'x', 'linewidth', 2)
-scatter(S_N2(:, 1), S_N2(:, 2), mean(abs(q_N2.^2), 2)/ratio, '+', 'linewidth', 2)
-scatter(S_N3(:, 1), S_N3(:, 2), mean(abs(q_N3.^2), 2)/ratio, '*', 'linewidth', 2)
+scatter(S_N1(:, 1), S_N1(:, 2), mean(abs(q_N1.^2), 2)/ratio, '*', 'linewidth', 1)
+scatter(S_N2(:, 1), S_N2(:, 2), mean(abs(q_N2.^2), 2)/ratio, '+', 'linewidth', 1)
+scatter(S_N3(:, 1), S_N3(:, 2), mean(abs(q_N3.^2), 2)/ratio, 'x', 'linewidth', 1)
 
-scatter(xomp(:, 1), xomp(:, 2), mean(abs(q_OMP.^2), 2)/ratio, 'o', 'linewidth', 2)
+scatter(xomp(:, 1), xomp(:, 2), mean(abs(q_OMP.^2), 2)/ratio, 'o', 'linewidth', 1)
 
-scatter(Xl(:, 1), Xl(:, 2), mean(abs(Al.^2), 2)/ratio, '^', 'linewidth', 2)
+scatter(Xl(:, 1), Xl(:, 2), mean(abs(Al.^2), 2)/ratio, '^', 'linewidth', 1)
 
 xlim([-2, 1])
 ylim([-1, 0])
@@ -129,20 +129,20 @@ xlim([-2, 1])
 
 subplot(3, 1, 3)
 
-scatter(XSFWm(:, 1), XSFWm(:, 3), mean(abs(ASFW.^2), 2)/ratio, 's', 'linewidth', 2)
+scatter(XSFWm(:, 1), XSFWm(:, 3), mean(abs(ASFW.^2), 2)/ratio, 's', 'linewidth', 1)
 hold on
-scatter(S_N1(:, 1), S_N1(:, 3), mean(abs(q_N1.^2), 2)/ratio, 'x', 'linewidth', 2)
-scatter(S_N2(:, 1), S_N2(:, 3), mean(abs(q_N2.^2), 2)/ratio, '+', 'linewidth', 2)
-scatter(S_N3(:, 1), S_N3(:, 3), mean(abs(q_N3.^2), 2)/ratio, '*', 'linewidth', 2)
+scatter(S_N1(:, 1), S_N1(:, 3), mean(abs(q_N1.^2), 2)/ratio, '*', 'linewidth', 1)
+scatter(S_N2(:, 1), S_N2(:, 3), mean(abs(q_N2.^2), 2)/ratio, '+', 'linewidth', 1)
+scatter(S_N3(:, 1), S_N3(:, 3), mean(abs(q_N3.^2), 2)/ratio, 'x', 'linewidth', 1)
 
-scatter(xomp(:, 1), xomp(:, 3), mean(abs(q_OMP.^2), 2)/ratio, 'o', 'linewidth', 2)
-scatter(Xl(:, 1), Xl(:, 3), mean(abs(Al.^2), 2)/ratio, '^', 'linewidth', 2)
+scatter(xomp(:, 1), xomp(:, 3), mean(abs(q_OMP.^2), 2)/ratio, 'o', 'linewidth', 1)
+scatter(Xl(:, 1), Xl(:, 3), mean(abs(Al.^2), 2)/ratio, '^', 'linewidth', 1)
 
 xlabel('X (m)')
 ylabel('Z (m)')
 xlim([-2, 1])
-ylim([4.35, 4.72])
-legend('SFW greedy', 'NOMP \tau=1', 'NOMP \tau=0.1', 'NOMP \tau=0.01', 'OMP', 'SFW regul.', 'Interpreter', 'TeX')
+ylim([4.44, 4.71])
+legend('SFW greedy', 'NOMP \tau=1', 'NOMP \tau=0.1', 'NOMP \tau=0.01', 'OMP', 'SFW penal.', 'Interpreter', 'TeX')
 
 
 % 10*log10(mean(abs(ASFW.^2), 2))

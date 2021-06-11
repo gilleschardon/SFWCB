@@ -1,4 +1,4 @@
-%% Influcence of the noise on precision
+%% MSE, grid
 
 clear all
 
@@ -15,7 +15,7 @@ nbSources=3;
 snapshots=1;
 
 step = [0.02 0.05 0.1 0.2 0.5];
-%step = [0.05 0.1 0.2 0.5];
+step = [0.05 0.1 0.2 0.5];
 
 snr = 20;
 
@@ -106,7 +106,7 @@ XX = [Xg(:) Yg(:) Zg(:)];
         tic
 
 	% SFW  
-        [XSFW, RE, IM] = sfw_multi_greedy_complex(Pmic, k, Y, XX, 0, 0, nbSources, [LBx LBy LBz]-0.1, [UBx UBy UBz]+0.1);
+        [XSFW, RE, IM] = sfw_multi_norm(Pmic, k, Y, XX, 0, 0, 0, nbSources, [LBx LBy LBz]-0.1, [UBx UBy UBz]+0.1);
         TS(p) = TS(p) + toc;
         [epS, eaS ] = compute_errors(XSFW, XS, sqrt(RE.^2+IM.^2), a);
         nbAppels(3,p)=nbAppels(3,p)+appels;
@@ -120,8 +120,8 @@ XX = [Xg(:) Yg(:) Zg(:)];
         TO(p) = TO(p) + toc;
         nbAppels(4,p)=nbAppels(4,p)+appels;
 
-        Errors_p(:,p, s)=[epN1, epN2, epS, epO]
-        Errors_q(:,p, s)=[eaN1, eaN2, eaS, eaO]
+        Errors_p(:,p, s)=[epN1, epN2, epS, epO];
+        Errors_q(:,p, s)=[eaN1, eaN2, eaS, eaO];
  end
 end
 

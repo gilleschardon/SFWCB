@@ -1,9 +1,9 @@
 function [a, a1, a2] = a_grad_hessian(PA, PX, k)
 
-% PX positions of the sources
-% PA positions of the array
-% k wavenumber
-% source dictionary D
+% like dictionary.m, but one source, and computes the hessian as well, for
+% NOMP
+
+
 global appels;
 appels = appels + 1;
 dx = PX(:,1).' - PA(:, 1);

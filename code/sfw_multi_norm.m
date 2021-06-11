@@ -1,5 +1,19 @@
 function [Xs, RE, IM, nu, err] = sfw_multi_norm(Xm, k, Data, Xgrid, lambda, tolpos, tolamp, Niter, LX, UX, Xs, RE, IM)
 
+%% SFW algorithm for multisnapshots source localization
+% normalized dictionary
+
+% Xm microphone positions Mx3
+% k wavenumber
+% Data acoustical data, MxS (S snapshots)
+% X grid initialization grid Nx3
+% lambda lambda
+% tolpos tolamp tolerance for source removal
+% Niter max number of iterations
+% LX UX bounds of the domain
+% Xs RE IM, for continuations, solutions for previous lambda, optional
+
+% Greedy mode : lambda = 0, Niter = number of sources
 
 tol = 1e-10;
 options_nu = optimoptions(@fmincon,'Display', 'off', 'Algorithm','sqp', 'SpecifyObjectiveGradient',false, 'CheckGradient', false, 'OptimalityTolerance', tol);
@@ -21,6 +35,8 @@ elseif size(Xs, 1) > 0
 end
 
 C = zeros(size(Data));
+
+% stopping tolerance
 tolnu = 1.001;
 
 
@@ -48,10 +64,7 @@ for u = 1:Niter
         %% Cleaning (optional)
         %[Xs, amps, phases] = clean(Xs, amps, phases, tolamp, tolpos);
         fprintf("Reached the stopping tolerance\n")
-%         if size(RE, 1) > 0        
-%             RE = RE ./ norms';
-%             IM = IM ./ norms';
-%         end
+
         return
     end
     
@@ -82,7 +95,7 @@ for u = 1:Niter
     
 end
 %% Max iter. reached
-fprintf("Max iter, stopping\n")
+    fprintf("Max iter, stopping\n")
     Dloc = dictionary(Xm, Xs, k);
     norms = sqrt(sum(abs(Dloc).^2, 1));
     Dloc = Dloc ./ norms;
@@ -92,23 +105,10 @@ fprintf("Max iter, stopping\n")
     R = Data - C;
     err = norm(R, 'fro');
     
-%         if size(RE, 1) > 0        
-%             RE = RE ./ norms';
-%             IM = IM ./ norms';
-%         end
 
 end
 
-
-%% maximize nu(x)
-% Xm sensors
-% Xgrid grid
-% Dgrid dictionary on the grid
-% R residual
-% options options
-%
-% Xnu argmax
-% nu max
+%% Maximization of nu
 
 function [Xnu, nu] = maximize_nu(Xm, k, lambda, Xgrid, Dgrid, R, LX, UX, options)
 
@@ -122,6 +122,18 @@ nuf = @(X) nux_multi(Xm, k, R, X);
 nu = sqrt(-(numin))/lambda;
 end
 
+function [nu] = nux_multi(Xm, k, Delta, Xnu)
+
+
+    d = dictionary(Xm, Xnu, k);
+    d = d / norm(d);
+    nu = - sum(abs(d'*Delta).^2);
+
+end
+
+%% Amplitude optimization
+
+
 function [RE, IM] = optimize_amplitudes(Dloc, Data, lambda, RE, IM, options)
 
 Nsnap = size(Data, 2);
@@ -133,6 +145,41 @@ RE = amps(1:Ns, :);
 IM = amps(Ns+1:end, :);
 
 end
+
+
+
+function [J,Jgrad] = obj_amplitudes_multi(D, Data, lambda, x)
+
+Nsnap = size(Data, 2);
+
+Ns = size(x, 1)/2;
+
+A = x(1:Ns, 1:Nsnap) + 1i * x(Ns+1:2*Ns, 1:Nsnap);
+C = D * A;
+
+Delta = C - Data;
+
+% objective
+J = 1/2 * norm(Delta, 'fro')^2 + lambda * sum(sqrt(sum(x.^2, 2)));
+
+% computing the gradient
+if nargout > 1
+    Jgrad = zeros(size(x));
+    for u = 1:Ns
+        if norm(x(u, :) + 1i * x(u+Ns, :), 2) > 0
+            Jgrad(u, :) = real( sum(conj(D(:, u)).*Delta, 1)) + lambda * x(u, :) / norm(x(u, :) + 1i * x(u+Ns, :), 2);
+            Jgrad(u+Ns, :) = real( sum(conj(1i*D(:, u)).*Delta, 1)) + lambda * x(u+Ns, :) / norm(x(u, :) + 1i * x(u+Ns, :), 2);
+        else
+            Jgrad(u, :) = real( sum(conj((D(:, u))).*Delta, 1));
+            Jgrad(u, :) = real( sum(conj((1i*D(:, u))).*Delta, 1));
+
+        end
+    end
+end
+end
+
+
+%% Amplitude and position optimization
 
 function [Xs, RE, IM] = optimize_all(Xm, k, lambda, Data, Xs, RE, IM, LX, UX, options)
 
@@ -152,6 +199,75 @@ Xs = ZZ(:, 1:3);
 RE = ZZ(:, 4:3+Nsnap);
 IM = ZZ(:, 4+Nsnap:end);
 end
+
+
+
+function [J, Jgrad] = obj_amplitudes_positions_multi(Xm, k, Data, lambda, x)
+
+Ns = size(x, 1);
+
+Xs = x(:, 1:3);
+
+Nsnap = (size(x, 2)-3)/2;
+
+xx = x(:, 4:end);
+
+[D, Dx, Dy, Dz] = dictionary(Xm, Xs, k);
+norms = sqrt(sum(abs(D).^2, 1));
+Dnorm = D ./ norms;
+Dnormx = Dx ./ norms;
+Dnormy = Dy ./ norms;
+Dnormz = Dz ./ norms;
+
+Dx = Dnormx - Dnorm .* real( sum(conj(Dnormx).*Dnorm, 1));
+Dy = Dnormy - Dnorm .* real( sum(conj(Dnormy).*Dnorm, 1));
+Dz = Dnormz - Dnorm .* real( sum(conj(Dnormz).*Dnorm, 1));
+
+RE = xx(:, 1:Nsnap);
+
+IM = xx(:, Nsnap+1:end);
+
+A = RE + 1i * IM;
+C = Dnorm * A;
+
+Delta = C - Data;
+
+% objective
+
+J = 1/2 * norm(Delta, 'fro').^2 + lambda * sum(sqrt(sum(RE(:, 1:Nsnap).^2 + IM(:, 1:Nsnap).^2, 2)));
+
+% Computing the gradient
+
+if nargout > 1
+    JgradRE = zeros(Ns, Nsnap);
+    JgradIM = zeros(Ns, Nsnap);
+    Jgradpos = zeros(Ns, 3);
+
+    for u = 1:Ns
+        if norm(RE(u, :) + 1i*IM(u, :) , 2) > 0
+            JgradRE(u, :) = real( sum(conj((Dnorm(:, u))).*Delta, 1)) + lambda * RE(u, :) / norm(RE(u, :) + 1i*IM(u, :), 2);
+            JgradIM(u, :) = real( sum(conj(1i*(Dnorm(:, u))).*Delta, 1)) + lambda * IM(u, :) / norm(RE(u, :) + 1i*IM(u, :), 2);
+
+        else
+            JgradRE(u, :) = real( sum(conj((Dnorm(:, u))).*Delta, 1));
+            JgradIM(u, :) = real( sum(conj(1i*(Dnorm(:, u))).*Delta, 1));
+           
+        end
+       
+        Jgradpos(u, 1) = real(trace(Delta' * Dx(:, u)*A(u, :)));
+        Jgradpos(u, 2) = real(trace(Delta' * Dy(:, u)*A(u, :)));
+        Jgradpos(u, 3) = real(trace(Delta' * Dz(:, u)*A(u, :)));
+
+    end
+    Jgrad = [Jgradpos JgradRE JgradIM];
+    
+end
+end
+
+
+
+
+%% Cleaning
 
 function [Xs, amps, phases] = clean(Xs, amps, phases, tolamp, tolpos)
 
@@ -188,102 +304,5 @@ while m < tolpos
 end
 end
 
-function [J, Jgrad] = obj_amplitudes_positions_multi(Xm, k, Data, lambda, x)
-
-Ns = size(x, 1);
-
-Xs = x(:, 1:3);
-
-Nsnap = (size(x, 2)-3)/2;
-
-xx = x(:, 4:end);
-
-[D, Dx, Dy, Dz] = dictionary(Xm, Xs, k);
-norms = sqrt(sum(abs(D).^2, 1));
-Dnorm = D ./ norms;
-Dnormx = Dx ./ norms;
-Dnormy = Dy ./ norms;
-Dnormz = Dz ./ norms;
-
-Dx = Dnormx - Dnorm .* real( sum(conj(Dnormx).*Dnorm, 1));
-Dy = Dnormy - Dnorm .* real( sum(conj(Dnormy).*Dnorm, 1));
-Dz = Dnormz - Dnorm .* real( sum(conj(Dnormz).*Dnorm, 1));
-
-
-
-RE = xx(:, 1:Nsnap);
-
-IM = xx(:, Nsnap+1:end);
-
-A = RE + 1i * IM;
-C = Dnorm * A;
-
-Delta = C - Data;
-
-J = 1/2 * norm(Delta, 'fro').^2 + lambda * sum(sqrt(sum(RE(:, 1:Nsnap).^2 + IM(:, 1:Nsnap).^2, 2)));
-
-if nargout > 1
-    JgradRE = zeros(Ns, Nsnap);
-    JgradIM = zeros(Ns, Nsnap);
-    Jgradpos = zeros(Ns, 3);
-
-    for u = 1:Ns
-        if norm(RE(u, :) + 1i*IM(u, :) , 2) > 0
-            JgradRE(u, :) = real( sum(conj((Dnorm(:, u))).*Delta, 1)) + lambda * RE(u, :) / norm(RE(u, :) + 1i*IM(u, :), 2);
-            JgradIM(u, :) = real( sum(conj(1i*(Dnorm(:, u))).*Delta, 1)) + lambda * IM(u, :) / norm(RE(u, :) + 1i*IM(u, :), 2);
-
-        else
-             JgradRE(u, :) = real( sum(conj((Dnorm(:, u))).*Delta, 1));
-            JgradIM(u, :) = real( sum(conj(1i*(Dnorm(:, u))).*Delta, 1));
-           
-        end
-       
-        Jgradpos(u, 1) = real(trace(Delta' * Dx(:, u)*A(u, :)));
-        Jgradpos(u, 2) = real(trace(Delta' * Dy(:, u)*A(u, :)));
-        Jgradpos(u, 3) = real(trace(Delta' * Dz(:, u)*A(u, :)));
-
-    end
-    Jgrad = [Jgradpos JgradRE JgradIM];
-    
-end
-end
-
-function [J,Jgrad] = obj_amplitudes_multi(D, Data, lambda, x, phases)
-
-Nsnap = size(Data, 2);
-
-Ns = size(x, 1)/2;
-
-A = x(1:Ns, 1:Nsnap) + 1i * x(Ns+1:2*Ns, 1:Nsnap);
-C = D * A;
-
-Delta = C - Data;
-
-J = 1/2 * norm(Delta, 'fro')^2 + lambda * sum(sqrt(sum(x.^2, 2)));
-
-
-if nargout > 1
-    Jgrad = zeros(size(x));
-    for u = 1:Ns
-        if norm(x(u, :) + 1i * x(u+Ns, :), 2) > 0
-            Jgrad(u, :) = real( sum(conj(D(:, u)).*Delta, 1)) + lambda * x(u, :) / norm(x(u, :) + 1i * x(u+Ns, :), 2);
-            Jgrad(u+Ns, :) = real( sum(conj(1i*D(:, u)).*Delta, 1)) + lambda * x(u+Ns, :) / norm(x(u, :) + 1i * x(u+Ns, :), 2);
-        else
-            Jgrad(u, :) = real( sum(conj((D(:, u))).*Delta, 1));
-            Jgrad(u, :) = real( sum(conj((1i*D(:, u))).*Delta, 1));
-
-        end
-    end
-end
-end
-
-function [nu] = nux_multi(Xm, k, Delta, Xnu)
-
-
-    [d, gx, gy, gz] = dictionary(Xm, Xnu, k);
-    d = d / norm(d);
-    nu = - sum(abs(d'*Delta).^2);
-
-end
 
 

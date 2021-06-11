@@ -1,11 +1,13 @@
 function [D, Dx, Dy, Dz] = dictionary(PX, PS, k)
 
+% Dictionary of sources and gradient
+
 % PX positions of the sources
 % PS positions of the array
 % k wavenumber
 % source dictionary D
+% Dx Dy Dz gradients
 
-%Computation of the distance between each source and each microphone
 
 dx = PX(:, 1) - PS(:, 1).';
 dz = PX(:, 3) - PS(:, 3).';
