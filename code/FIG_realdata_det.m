@@ -79,9 +79,9 @@ norms = sqrt(sum(abs(Dl2).^2, 1));
 ASFW = sqrt(RE.^2 + IM.^2);
 ASFW = ASFW ./ norms.';
 load lambdapath
-Xl = Xn{210};
-REl = REn{210};
-IMl = IMn{210};
+Xl = Xn{190};
+REl = REn{190};
+IMl = IMn{190};
  Al = sqrt(REl.^2 + IMl.^2);
  
 Dl = dictionary(Pmic, Xl, k);
@@ -96,21 +96,6 @@ Al2 = Dl\data(:, 1:10);
 D = dictionary(Pmic, XX, k);
 
 norms = sqrt(sum(abs(D).^2, 1));
-
-%%
-
-stepM = 0.02;
-xxM = (LBx:stepM:UBx)';
-yyM = (LBy:stepM:UBy)';
-zzM = (LBz:stepM:UBz)';
-
-
-[XXgM, YYgM, ZZgM] = meshgrid(xxM, yyM,zzM);
-XXM = [XXgM(:), YYgM(:), ZZgM(:)];
-
-Xestm = MUSIC_local2(Y, 4,XXM,Pmic, k);
-
-Aestm = dictionary(Pmic, Xestm, k)\Y;
 %%
 MS=  200;
 MSgt = 40;
@@ -139,7 +124,7 @@ ylabel('Y (m)')
 
 
 
-subplot(2, 4, 2)
+subplot(2, 3, 2)
 scatter(XSFWm(:, 1), XSFWm(:, 2), MS, C1, '+', 'linewidth', lw)
 hold on
 
@@ -158,8 +143,7 @@ xlim([-2, 1])
 legend('SFW gr.', 'SFW p.')
 
 
-
-subplot(2, 4, 6)
+subplot(2, 3, 5)
 scatter(XSFWm(:, 1), XSFWm(:, 3), MS, C1, '+', 'linewidth', lw)
 hold on
 
@@ -186,7 +170,7 @@ xlim([-2, 1])
 
 
 
-subplot(2, 4, 3)
+subplot(2, 3, 3)
 
 scatter(S_N3(:, 1), S_N3(:, 2), MS, C3, '+', 'linewidth', lw)
 hold on
@@ -206,7 +190,7 @@ ylabel('Y (m)')
 xlim([-2, 1])
 
 
-subplot(2, 4, 7)
+subplot(2, 3, 6)
 
 scatter(S_N3(:, 1), S_N3(:, 3),MS, C3, '+', 'linewidth', lw)
 hold on
@@ -225,35 +209,4 @@ ylim([4, 5])
 xlabel('X (m)')
 ylabel('Z (m)')
 
-
-subplot(2, 4, 4)
-scatter(Xestm(:, 1), Xestm(:, 2), MS, C5, '+', 'linewidth', lw)
-hold on
-scatter(XSFWloc(:, 1),XSFWloc(:, 2), MSgt, C7, 'filled')
-legend('MUSIC')
-axis equal
-
-xlim([-2, 1])
-ylim([-1, 0])
-xlabel('X (m)')
-ylabel('Y (m)')
-xlim([-2, 1])
-
-subplot(2, 4, 8)
-
-scatter(Xestm(:, 1), Xestm(:, 3), MS, C5, '+', 'linewidth', lw)
-hold on
-
-
-scatter(XX(supp, 1), XX(supp, 3), x(supp)/1000, C4, 'x', 'linewidth', lw)
-
-scatter(XSFWloc(:, 1),XSFWloc(:, 3), MSgt, C7, 'filled')
-
-
-
-axis equal
-xlim([-2, 1])
-ylim([4, 5])
-xlabel('X (m)')
-ylabel('Y (m)')
 

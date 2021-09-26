@@ -1,5 +1,5 @@
 %% Homotopy SFW, experimental data
-
+clear all
 %% Parameters
 
 stepS = 0.05;
@@ -125,7 +125,7 @@ title('(A) Normalized dictionary')
  subplot(1, 2, 2)
 
 hold on
-for s = 1:length(sourcesn)
+for s = 1:length(sourcesu)
     plot(sourcesu{s}(:, 1), sourcesu{s}(:, 4), 'linewidth', 2)
 end
 ylim([3.95, 5.05])
