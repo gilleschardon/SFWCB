@@ -27,7 +27,6 @@ Errors_q=zeros(4,nbPlots, sample_size);
 % running time
 TN = zeros(nbPlots,1); % NOMP
 TS = zeros(nbPlots, 1); % SFW
-
 TO = zeros(nbPlots, 1); % OMP
 
 tol = 1e-9; % NOMP stopping criterion
@@ -107,9 +106,7 @@ for p = 1:nbPlots
         
         [epS, eaS ] = compute_errors(XSFW, XS, Asfw, a);
 
-        
-        
-      
+            
         
         % OMP
         tic
@@ -118,7 +115,6 @@ for p = 1:nbPlots
         TO(p) = TO(p) + toc;
         
         
-
 epM = inf;
 eaM = inf;
     if snapshots(p) > 3
@@ -139,7 +135,7 @@ end
 Errors_p_m= mean(Errors_p, 3);
 Errors_q_m= mean(Errors_q, 3);
 
-%save snap
+save snap
 %% Plot the points
 load snap
 
@@ -152,9 +148,8 @@ plot(snapshots,Errors_p_m(2,:),'-o','LineWidth',2, 'markersize', msize);
 set(gca, 'ColorOrderIndex', get(gca, 'ColorOrderIndex')+1);
 plot(snapshots,Errors_p_m(1,:),'--x','LineWidth',2, 'markersize', msize);
 plot(snapshots,Errors_p_m(3,:),':s','LineWidth',2, 'markersize', msize);
+plot(snapshots,Errors_p_m(4,:),':^','LineWidth',2, 'markersize', msize);
 
-
-plot(snapshots,Errors_p_m(4,:),':*','LineWidth',2, 'markersize', msize);
 
 xlabel("Snapshots")
 ylabel("MSE position (m^2) ")

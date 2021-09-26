@@ -69,7 +69,7 @@ zz = (LBz:step(p):UBz)';
 XX = [Xg(:) Yg(:) Zg(:)];
 
 
-    
+    %%
     for s = 1:sample_size
         
         % source positions
@@ -108,9 +108,21 @@ XX = [Xg(:) Yg(:) Zg(:)];
 	% SFW  
         [XSFW, RE, IM] = sfw_multi_norm(Pmic, k, Y, XX, 0, 0, 0, nbSources, [LBx LBy LBz]-0.1, [UBx UBy UBz]+0.1);
         TS(p) = TS(p) + toc;
+                Dest = dictionary(Pmic, XSFW, k);
+        norms = sqrt(sum(abs(Dest).^2, 1))';
+        
+        RE = RE ./ norms;
+        IM = IM ./ norms;
         [epS, eaS ] = compute_errors(XSFW, XS, sqrt(RE.^2+IM.^2), a);
+
+        
         nbAppels(3,p)=nbAppels(3,p)+appels;
 
+        
+              
+        
+                     
+        
         appels = 0;
 
 	% OMP
@@ -122,7 +134,8 @@ XX = [Xg(:) Yg(:) Zg(:)];
 
         Errors_p(:,p, s)=[epN1, epN2, epS, epO];
         Errors_q(:,p, s)=[eaN1, eaN2, eaS, eaO];
- end
+    end
+ 
 end
 
 Errors_p_m= mean(Errors_p, 3);
@@ -199,6 +212,7 @@ plot(step, nbAppels(3, :)/sample_size,'-o','LineWidth',2, 'markersize', 10);
 plot(step,nbAppels(1, :)/sample_size,'--+','LineWidth',2, 'markersize', 10);
 plot(step,nbAppels(2, :)/sample_size,'-.x','LineWidth',2, 'markersize', 10);
 plot(step,nbAppels(4, :)/sample_size,':s','LineWidth',2, 'markersize', 10);
+
 legend('SFW', sprintf('NOMP, \\tau = 10e%d ',log10(tol1)),sprintf('NOMP, \\tau = 10e%d ',log10(tol2)), 'OMP','Interpreter','tex')
 xticks(step)
 

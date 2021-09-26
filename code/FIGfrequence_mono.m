@@ -9,17 +9,21 @@ sample_size = 50;
 
 nbSources=3;
 snapshots=1;
-nbPlots = 9;
+nbPlots = 11;
 
 step = 0.05;
 
-f = logspace(2.5, 4.5, nbPlots);
+f = logspace(2.5, 5, nbPlots);
+
 k = 2 * pi /340 * f;
 
 snr = 20;
 
 % position errors (NOMP SFW OMP)
-Errors_p=zeros(3,nbPlots, sample_size);
+Errors_X=zeros(3,nbPlots, sample_size);
+Errors_Y=zeros(3,nbPlots, sample_size);
+Errors_Z=zeros(3,nbPlots, sample_size);
+
 % amplitude errors
 Errors_q=zeros(3,nbPlots, sample_size);
 
@@ -33,9 +37,9 @@ tol = 1e-9; % NOMP stopping criterion
 
 % domain
 LBx = -1;
-UBx = 1;
+UBx =  1;
 LBy = -1;
-UBy = 1;
+UBy =  1;
 LBz = 3;
 UBz = 5;
 
@@ -57,8 +61,7 @@ nn = 0;
 for p = 1:nbPlots
 
 %% Simulation
-    
-    for s = 1:sample_size
+       for s = 1:sample_size
         waitbar(nn/ntotal);
         nn = nn + 1;
         
@@ -79,36 +82,50 @@ for p = 1:nbPlots
         % NOMP
         tic
         [S_N,q_N] = newton_nsnapshot(Y,nbSources,XX,Pmic, tol, k(p));        
-        [epN, eaN ] = compute_errors(S_N, XS, q_N, a); 
+        [epNX, epNY, epNZ, eaN ] = compute_errors_coherenceXYZ(S_N, XS, q_N, a, Pmic, k(p)); 
         TN(p) = TN(p) + toc;
            
         % SFW
         tic
         [XSFW, RE, IM] = sfw_multi_norm(Pmic, k(p), Y, XX, 0, 0, 0, nbSources, [LBx LBy LBz]-0.1, [UBx UBy UBz]+0.1);
-        [epS, eaS] = compute_errors(XSFW, XS, sqrt(RE.^2+IM.^2), a);
         TS(p) = TS(p) + toc;
 
+        Dest = dictionary(Pmic, XSFW, k(p));
+        norms = sqrt(sum(abs(Dest).^2, 1))';
+        
+        RE = RE ./ norms;
+        IM = IM ./ norms;
+
+               
+        [epSX, epSY, epSZ, eaS] = compute_errors_coherenceXYZ(XSFW, XS, RE + 1i*IM, a, Pmic, k(p));
+
+       
+        
         % OMP
         tic
         [xomp, q_OMP] = OMP(Y,nbSources,XX, Pmic, k(p));
-        [epO, eaO] =compute_errors(xomp, XS, q_OMP, a);
+        [epOX, epOY, epOZ, eaO] =compute_errors_coherenceXYZ(xomp, XS, q_OMP, a, Pmic, k(p));
 
         TO(p) = TO(p) + toc;
 
-        Errors_p(:,p, s) = [epN, epS, epO];
+        Errors_X(:,p, s) = [epNX, epSX, epOX];
+        Errors_Y(:,p, s) = [epNY, epSY, epOY];
+        Errors_Z(:,p, s) = [epNZ, epSZ, epOZ];
+
         Errors_q(:,p, s)= [eaN, eaS, eaO];
+        
+        
+        
     end
 end
 
-Errors_p_m= mean(Errors_p, 3);
+Errors_X_m= mean(Errors_X, 3);
+Errors_Y_m= mean(Errors_Y, 3);
+Errors_Z_m= mean(Errors_Z, 3);
+
+Errors_p_m = Errors_X_m + Errors_Y_m + Errors_Z_m;
+
 Errors_q_m= mean(Errors_q, 3);
-
-Eplast = sort(Errors_p, 3,'ascend');
-Eqlast = sort(Errors_q, 3,'ascend');
-
-Errors_p_m= mean(Eplast(:, :, 1:end-1), 3);
-Errors_q_m= mean(Eqlast(:, :, 1:end-1), 3);
-
 save freq
 
 %% Plot the points
@@ -116,7 +133,7 @@ save freq
 load freq
 
 close all
-
+msize = 15;
 figure('Position', [100, 100, 800, 300])
 
 subplot(1,2,1);
@@ -124,11 +141,13 @@ hold on
 set(gca, 'YScale', 'log')
 set(gca, 'XScale', 'log')
 
-loglog(f,Errors_p_m(2,:),'-o','LineWidth',2, 'markersize', 10);
+loglog(f,Errors_X_m(2,:) + Errors_Y_m(2,:)+ Errors_Z_m(2,:) ,'-o','LineWidth',2, 'markersize', msize);
 set(gca, 'ColorOrderIndex', get(gca, 'ColorOrderIndex')+1);
 
-loglog(f,Errors_p_m(1,:),'--x','LineWidth',2, 'markersize', 10);
-loglog(f,Errors_p_m(3,:),':s','LineWidth',2, 'markersize', 10);
+loglog(f,Errors_X_m(1,:)+ Errors_Y_m(1,:)+ Errors_Z_m(1,:),'--x','LineWidth',2, 'markersize', msize);
+loglog(f,Errors_X_m(3,:)+ Errors_X_m(3,:)+ Errors_Z_m(3,:) ,':s','LineWidth',2, 'markersize', msize);
+
+
 xticks([100,1000,10000])
 
 xlabel("f (Hz)")
@@ -140,12 +159,13 @@ hold on
 set(gca, 'YScale', 'log')
 set(gca, 'XScale', 'log')
 
-loglog(f,Errors_q_m(2,:),'-o','LineWidth',2, 'markersize', 10);
+loglog(f,Errors_q_m(2,:),'-o','LineWidth',2, 'markersize', msize);
 set(gca, 'ColorOrderIndex', get(gca, 'ColorOrderIndex')+1);
 
-loglog(f,Errors_q_m(1,:),'--x','LineWidth',2, 'markersize', 10);
-loglog(f,Errors_q_m(3,:),':s','LineWidth',2, 'markersize', 10);
-legend('SFWm','NOMP', 'OMP','Interpreter','tex')
+loglog(f,Errors_q_m(1,:),'--x','LineWidth',2, 'markersize', msize);
+loglog(f,Errors_q_m(3,:),':s','LineWidth',2, 'markersize', msize);
+
+legend('SFW gr.','NOMP', 'OMP', 'Interpreter','tex')
 xticks([100,1000,10000])
 yticks([0.01, 0.1,1, 10,100]/100)
 

@@ -29,6 +29,7 @@ Errors_q=zeros(3,nbPlots, sample_size);
 TN = zeros(nbPlots,1); % NOMP
 TS = zeros(nbPlots, 1); % SFW
 TO = zeros(nbPlots, 1); % OMP
+TSl = zeros(nbPlots, 1); % SFW
 
 tol = 1e-9; % NOMP stopping criterion
 
@@ -86,9 +87,17 @@ for p = 1:nbPlots
         % SFW
         tic
         [XSFW, RE, IM] = sfw_multi_norm(Pmic, k, Y, XX, 0, 0, 0, nbSources, [LBx LBy LBz]-0.1, [UBx UBy UBz]+0.1);
-        [epS, eaS ] = compute_errors(XSFW, XS, sqrt(RE.^2+IM.^2), a);
         TS(p) = TS(p) + toc;
- 
+
+        Dest = dictionary(Pmic, XSFW, k);
+        norms = sqrt(sum(abs(Dest).^2, 1))';
+        
+        RE = RE ./ norms;
+        IM = IM ./ norms;
+        [epS, eaS ] = compute_errors(XSFW, XS, sqrt(RE.^2+IM.^2), a);
+
+               
+             
         % OMP
         tic
         [xomp, q_OMP] = OMP(Y,nbSources,XX, Pmic, k);
@@ -103,38 +112,38 @@ end
 Errors_p_m= mean(Errors_p, 3);
 Errors_q_m= mean(Errors_q, 3);
 
-save noise1
+save noise
 %% Plot the points
-load noise1
+load noise
 
 figure('Position', [100, 100, 800, 300])
+msize = 15;
 
 subplot(1,2,1);
 hold on
 set(gca, 'YScale', 'log')
-plot(snr,Errors_p_m(2,:),'-o','LineWidth',2, 'markersize', 10);
+plot(snr,Errors_p_m(2,:),'-o','LineWidth',2, 'markersize', msize);
 set(gca, 'ColorOrderIndex', get(gca, 'ColorOrderIndex')+1);
-plot(snr,Errors_p_m(1,:),'--x','LineWidth',2, 'markersize', 10);
-plot(snr,Errors_p_m(3,:),':s','LineWidth',2, 'markersize', 10);
+plot(snr,Errors_p_m(1,:),'--x','LineWidth',2, 'markersize', msize);
+plot(snr,Errors_p_m(3,:),':s','LineWidth',2, 'markersize', msize);
 
 xlabel("SNR")
 ylabel("MSE position (m^2) ")
-legend('SFWm','NOMP', 'OMP')
+
 yticks([0.0001, 0.001,0.01, 0.1,1])
 
 subplot(1,2,2);
 hold on
 set(gca, 'YScale', 'log')
-plot(snr,Errors_q_m(2,:),'-o','LineWidth',2, 'markersize', 10);
+plot(snr,Errors_q_m(2,:),'-o','LineWidth',2, 'markersize', msize);
 set(gca, 'ColorOrderIndex', get(gca, 'ColorOrderIndex')+1);
 
-plot(snr,Errors_q_m(1,:),'--x','LineWidth',2, 'markersize', 10);
+plot(snr,Errors_q_m(1,:),'--x','LineWidth',2, 'markersize', msize);
+plot(snr,Errors_q_m(3,:),':s','LineWidth',2, 'markersize', msize);
 
-plot(snr,Errors_q_m(3,:),':s','LineWidth',2, 'markersize', 10);
-yticks([0.01, 0.1, 1, 10])
 
 xlabel("SNR")
 ylabel("MSE amplitudes (Pa^2)")
+legend('SFW gr.','NOMP', 'OMP', 'Interpreter','tex')
 
-yticks([0.01, 0.1,1, 10,100])
 

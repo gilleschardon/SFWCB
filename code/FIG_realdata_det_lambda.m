@@ -85,11 +85,6 @@ save lambdapath
  end
  sourcesn = sources_tracking(lambdan,Xn,ampsn);
  
- for u = 1:length(REu)
-     ampsu{u} = sqrt(REu{u}.^2+IMu{u}.^2);
- end
- sourcesu = sources_tracking(lambdau,Xu,ampsu);
-
   % Amplitudes in function of lambda
 
  

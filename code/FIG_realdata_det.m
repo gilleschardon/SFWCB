@@ -1,11 +1,10 @@
 %% Comparison of NOMP and SFW, experimental data
 
-% please run FIG_realdata_del_lambda.m first
+% please run FIG_realdata_det_lambda.m first
 
 clear all
 
 
-%load ../data/damasdata150snaps2
 load data5
 close all
 
@@ -26,18 +25,10 @@ xxS = (LBx+gap:stepS:UBx-gap)';
 yyS = (LBy+gap:stepS:UBy-gap)';
 zzS = (LBz+gap:stepS:UBz-gap)';
 
-xxCMF = (LBx:stepS:UBx)';
-yyCMF = (LBy:stepS:UBy)';
-zzCMF = (LBz:stepS:UBz)';
 xxBF = (LBx:stepBF:UBx)';
 yyBF = (LBy:stepBF:UBy)';
 [Xg, Yg, Zg] = meshgrid(xxS, yyS, zzS);
-XXS = [Xg(:) Yg(:) Zg(:)];    
-
-
-[Xg, Yg, Zg] = meshgrid(xxCMF, yyCMF, zzCMF);
-XXCMF = [Xg(:) Yg(:) Zg(:)];  
-
+XX = [Xg(:) Yg(:) Zg(:)];    
 
 [Xg, Yg, Zg] = meshgrid(xxBF, yyBF, 4.5);
 XXBF = [Xg(:) Yg(:) Zg(:)];  
@@ -52,7 +43,6 @@ tol2 = 0.1;
 tol3 = 0.01;
 
 nbSources = 4;
-XX = XXCMF;
 
 Y = data(:, 1:10);
 
@@ -69,7 +59,7 @@ toc
 
 
 tic
-[XSFWm, RE, IM] = sfw_multi_norm(Pmic, k, Y, XXCMF, 0, 0, 0, nbSources, [LBx LBy LBz]-0.1, [UBx UBy UBz]+0.1);
+[XSFWm, RE, IM] = sfw_multi_norm(Pmic, k, Y, XX, 0, 0, 0, nbSources, [LBx LBy LBz]-0.1, [UBx UBy UBz]+0.1);
 toc
 
 

@@ -3,6 +3,8 @@ function [Xs, RE, IM, nu, err] = sfw_multi_norm(Xm, k, Data, Xgrid, lambda, tolp
 %% SFW algorithm for multisnapshots source localization
 % normalized dictionary
 
+% /!\ returns amplitudes using the normalized dictionary
+
 % Xm microphone positions Mx3
 % k wavenumber
 % Data acoustical data, MxS (S snapshots)
