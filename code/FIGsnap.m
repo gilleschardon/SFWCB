@@ -129,8 +129,8 @@ eaM = inf;
 
 
     
-          Errors_p(:,p, s) = [epN, epS, epO, epSl, epM];
-        Errors_q(:,p, s)= [eaN, eaS, eaO, eaSl, eaSlun, eaM];
+          Errors_p(:,p, s) = [epN, epS, epO, epM];
+        Errors_q(:,p, s)= [eaN, eaS, eaO, eaM];
         
     end 
 end
