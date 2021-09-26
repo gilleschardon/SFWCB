@@ -1,4 +1,4 @@
-function [S,q] = newton_nsnapshot(Y, nbSources,XX,Pmic,  tol, k)
+function [S,q, err] = newton_nsnapshot(Y, nbSources,XX,Pmic,  tol, k)
 
 %% newtonized OMP
 % Y data
@@ -49,29 +49,31 @@ for s = 1:nbSources
 
     rhorho = sum(abs(Domnorm'*Pr).^2, 2);
     [~, n_star] = max(rhorho);
+
+    %XX(n_star,:)
     
     S(s,:)=XX(n_star,:);
 
     q(s,:)=(Dom(:,n_star)'*Pr)/(norm(Dom(:,n_star),2)^2);
     %%Local Newton Optimization
- 
+
     [dloc,gradloc,hessloc] = a_grad_hessian(Pmic, XX(n_star, :), k);
 
     [jacobian,hessian]=jac_hess(q(s,:),Pr,dloc,gradloc,hessloc);
-   
-    
+
+
     step = (hessian(1:DD, 1:DD)\jacobian(1:DD)).';
 
 
 
     S(s,1:DD)=S(s,1:DD)-step;
-    
+
     A(:,s)=dictionary(Pmic,S(s, :), k);
-    
+
     q(s,:)=(A(:,s)'*Pr)/(norm(A(:,s),2)^2);
-    
+
     %S
-    
+
     new_Pr=Y;
     for n=1:s
         new_Pr=new_Pr-A(:,n)*q(n,:);
@@ -91,7 +93,7 @@ for s = 1:nbSources
 
            A(:,i)=dictionary(Pmic,S(i, :), k);
            q(i,:)=(A(:,i)'*interm_Pr)/(norm(A(:,i),2)^2);
-           
+
 
            Pr=new_Pr;
            new_Pr=interm_Pr-A(:,i)*q(i,:);
@@ -99,14 +101,13 @@ for s = 1:nbSources
         l=l+1;
 
     end
-    
-    %%Orthogonal solution   
+
+    %%Orthogonal solution
     q(1:s,:)=A(:,1:s) \ Y;
     Pr=Y-A*q;
    % S
-   % norm(Pr, 'fro')
+   err =  norm(Pr, 'fro');
 
 end
 
 end
-
